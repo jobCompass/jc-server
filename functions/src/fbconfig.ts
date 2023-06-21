@@ -3,7 +3,7 @@ import * as firestore from "firebase-admin/firestore";
 // import * as functions from "firebase-functions";
 
 admin.initializeApp({
-  credential:admin.applicationDefault()
+  credential: admin.applicationDefault(),
 });
 const db = firestore.getFirestore();
 // admin.initializeApp({

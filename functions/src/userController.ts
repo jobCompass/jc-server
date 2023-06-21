@@ -1,11 +1,11 @@
-import { Response } from "express";
+import {Response} from "express";
 import {db} from "./fbconfig";
-import {UserType} from './prototypes';
+import {UserType} from "./prototypes";
 
 type Request = {
   body: UserType,
   query: { userId: string}
-}
+};
 
 const addUser = async (req: Request, res: Response) => {
   const newUser = req.body;
@@ -23,7 +23,7 @@ const addUser = async (req: Request, res: Response) => {
 };
 
 const getUser = async (req: Request, res: Response) => {
-  const { userId } = req.query;
+  const {userId} = req.query;
   console.log("in getUser", userId);
   const logedUser = await db.collection("users").doc(userId).get();
   console.log(logedUser.data());
@@ -31,8 +31,7 @@ const getUser = async (req: Request, res: Response) => {
 };
 
 
-const helloWorld = async(request: Request, response:Response) => {
-
+const helloWorld = async (request: Request, response:Response) => {
   console.log("hello from jobcompass");
   response.send("Hello from our server Firebase!");
 };
