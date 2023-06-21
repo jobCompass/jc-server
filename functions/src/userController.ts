@@ -1,6 +1,6 @@
 import { Response } from "express";
 import {db} from "./fbconfig";
-
+import {UserType} from './prototypes';
 
 type Request = {
   body: UserType,
@@ -11,7 +11,7 @@ const addUser = async (req: Request, res: Response) => {
   const newUser = req.body;
   try {
     const addRes = await db.collection("users").add(newUser);
-    console.log("id", addRes.id, addRes.jobs);
+    console.log("id", addRes.id);
     res.status(201).send({
       status: "sucess",
       message: "user added successully",
