@@ -22,7 +22,7 @@ const getJob = async (req: Request, res:Response) => {
 };
 
 const addJob = async (req: Request, res:Response) => {
-  const newJob = req.body;
+  let newJob = req.body;
   const {userId} = req.params;
   try {
     const addOne =await db.collection("users").doc(userId).collection("jobs").add(newJob);

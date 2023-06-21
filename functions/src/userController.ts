@@ -30,20 +30,7 @@ const getUser = async (req: Request, res: Response) => {
   res.status(200).json(logedUser.data());
 };
 
-// const getUser = async (req: Request, res: Response) => {
-//   try {
-//     const allUsers = await db.collection("users").get();
-//     // const resData = new Map();
-//     // allUsers.forEach((user) => {
-//     //   console.log(user.id, "=>", user.data());
-//     //   resData.set(user.id, user.data());
-//     // });
-//     console.log(allUsers);
-//     res.status(200).json(allUsers);
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// };
+
 const helloWorld = async(request: Request, response:Response) => {
 
   console.log("hello from jobcompass");

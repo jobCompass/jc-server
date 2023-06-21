@@ -19,7 +19,6 @@ type UserType = {
     email: string
   },
   custom_list: Array<string> | null,
-  jobs: Array<JobType> | [],
 }
 
 export {JobType, UserType};
