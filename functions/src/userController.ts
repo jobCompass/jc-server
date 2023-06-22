@@ -4,9 +4,12 @@ import {UserType} from "./prototypes";
 
 type Request = {
   body: UserType,
-  query: { userId: string}
+  params: { userId: string}
 };
 
+// const checkUser = async(req:Request, res:Response) => {
+//   const
+// };
 const addUser = async (req: Request, res: Response) => {
   const newUser = req.body;
   try {
@@ -23,11 +26,31 @@ const addUser = async (req: Request, res: Response) => {
 };
 
 const getUser = async (req: Request, res: Response) => {
-  const {userId} = req.query;
+  const {userId} = req.params;
+  const user = req.body;
   console.log("in getUser", userId);
-  const logedUser = await db.collection("users").doc(userId).get();
-  console.log(logedUser.data());
-  res.status(200).json(logedUser.data());
+  console.log('in geUser user', user);
+
+  // const q = query(collection(db, "users"), where("uid", "==", user.uid));
+  // const docs = await getDocs(q);
+  // if (docs.docs.length === 0) {
+  //   await addDoc(collection(db, "users"), {
+  //     uid: user.uid,
+  //     name: user.displayName,
+  //     authProvider: "google",
+  //     email: user.email,
+  //   });
+  // }
+  const logedUser = db.collection("users");
+  const q =await logedUser.where('id', '==', userId).get();
+  console.log('q', q.docs);
+  if (q.docs.length === 0) {
+    console.log('nope')
+    res.status(204).send('newUser')
+  } else {
+    res.status(200).json(q);
+  }
+
 };
 
 
