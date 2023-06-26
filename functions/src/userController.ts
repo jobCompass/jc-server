@@ -1,11 +1,17 @@
 import {Response} from "express";
 import {db} from "./fbconfig";
-import {UserType} from "./prototypes";
-
+// import {UserType} from "./prototypes";
+type GoogleUserType = {
+  uid: string,
+  email: string,
+  displayName: string,
+  photoURL: string | null,
+}
 type Request = {
-  body: UserType,
-  query: { userId: string}
+  body: GoogleUserType,
+  params: { userId: string}
 };
+
 
 const addUser = async (req: Request, res: Response) => {
   const newUser = req.body;
@@ -23,11 +29,35 @@ const addUser = async (req: Request, res: Response) => {
 };
 
 const getUser = async (req: Request, res: Response) => {
-  const {userId} = req.query;
+  const {userId} = req.params;
+  const {email, displayName, photoURL} = req.body;
   console.log("in getUser", userId);
-  const logedUser = await db.collection("users").doc(userId).get();
-  console.log(logedUser.data());
-  res.status(200).json(logedUser.data());
+  const logedUser = db.collection("users");
+  try {
+    const q = await logedUser.doc(userId).get();
+    if (!q.exists) {
+      console.log("not exists");
+      const newUser= {
+        uid: userId,
+        personal_info: {
+          first_name: displayName.split(" ")[0],
+          last_name: displayName.split(" ")[1],
+          email: email,
+          authProvider: "google",
+          photo: photoURL,
+        },
+        custom_list: null,
+      };
+      const addRes = await db.collection("users").doc(userId).set(newUser);
+      if (addRes) {
+        res.status(201).send(newUser);
+      }
+    } else {
+      res.status(200).send(q.data());
+    }
+  } catch (err) {
+    res.status(500).json(err);
+  }
 };
 
 

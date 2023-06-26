@@ -29,7 +29,7 @@ app.use(express.json());
 
 
 app.get("/", helloWorld);
-app.get("/user", getUser);// need pass query {userId: id} in request
+app.post("/login/:userId", getUser);// need pass query {userId: id} in request
 app.post("/user", addUser);// need pass some content in body
 
 app.post("/:userId/addjob", addJob);

@@ -12,11 +12,13 @@ type JobType = {
 };
 
 type UserType = {
-  id: string | null,
+  uid: string | null,
   personal_info: {
     first_name: string,
     last_name: string,
-    email: string
+    email: string,
+    authProvider: string | null,
+    photo: string | null,
   },
   custom_list: Array<string> | null,
 }
