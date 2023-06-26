@@ -1,15 +1,18 @@
 import {Response} from "express";
 import {db} from "./fbconfig";
-import {UserType} from "./prototypes";
-
+// import {UserType} from "./prototypes";
+type GoogleUserType = {
+  uid: string,
+  email: string,
+  displayName: string,
+  photoURL: string | null,
+}
 type Request = {
-  body: UserType,
+  body: GoogleUserType,
   params: { userId: string}
 };
 
-// const checkUser = async(req:Request, res:Response) => {
-//   const
-// };
+
 const addUser = async (req: Request, res: Response) => {
   const newUser = req.body;
   try {
@@ -27,30 +30,34 @@ const addUser = async (req: Request, res: Response) => {
 
 const getUser = async (req: Request, res: Response) => {
   const {userId} = req.params;
-  const user = req.body;
+  const {email, displayName, photoURL} = req.body;
   console.log("in getUser", userId);
-  console.log('in geUser user', user);
-
-  // const q = query(collection(db, "users"), where("uid", "==", user.uid));
-  // const docs = await getDocs(q);
-  // if (docs.docs.length === 0) {
-  //   await addDoc(collection(db, "users"), {
-  //     uid: user.uid,
-  //     name: user.displayName,
-  //     authProvider: "google",
-  //     email: user.email,
-  //   });
-  // }
   const logedUser = db.collection("users");
-  const q =await logedUser.where('id', '==', userId).get();
-  console.log('q', q.docs);
-  if (q.docs.length === 0) {
-    console.log('nope')
-    res.status(204).send('newUser')
-  } else {
-    res.status(200).json(q);
+  try {
+    const q = await logedUser.doc(userId).get();
+    if (!q.exists) {
+      console.log("not exists");
+      const newUser= {
+        uid: userId,
+        personal_info: {
+          first_name: displayName.split(" ")[0],
+          last_name: displayName.split(" ")[1],
+          email: email,
+          authProvider: "google",
+          photo: photoURL,
+        },
+        custom_list: null,
+      };
+      const addRes = await db.collection("users").doc(userId).set(newUser);
+      if (addRes) {
+        res.status(201).send(newUser);
+      }
+    } else {
+      res.status(200).send(q.data());
+    }
+  } catch (err) {
+    res.status(500).json(err);
   }
-
 };
 
 

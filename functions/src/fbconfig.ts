@@ -6,6 +6,4 @@ admin.initializeApp({
 });
 const db = firestore.getFirestore();
 
-
-
 export {admin, db};
