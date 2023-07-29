@@ -1,10 +1,11 @@
 import {Response} from "express";
 import {db} from "./fbconfig";
 import {JobType} from "./prototypes";
+// import { FieldValue } from "firebase-admin/firestore";
 // import { FieldValue} from "@google-cloud/firestore";
 type Request = {
-  body: JobType,
-  params: { userId: string, jobIndex: number}
+  body?: JobType,
+  params: { userId: string, jobId: string}
 }
 
 const getJob = async (req: Request, res:Response) => {
@@ -17,7 +18,7 @@ const getJob = async (req: Request, res:Response) => {
       .get();
     const allJobs:Array<any> = [];
     snapshot.forEach((doc) => {
-      allJobs.push(doc.data());
+      allJobs.push({...doc.data(), id: doc.id});
     });
     console.log(allJobs);
     res.status(200).json(allJobs);
@@ -29,52 +30,50 @@ const getJob = async (req: Request, res:Response) => {
 const addJob = async (req: Request, res:Response) => {
   const newJob = req.body;
   const {userId} = req.params;
-  try {
-    const addOne = await db.collection("users")
+  if (newJob) {
+    db.collection("users")
       .doc(userId)
       .collection("jobs")
-      .add(newJob);
-    res.status(201).send({
-      status: "success",
-      message: "add one new job",
-      data: addOne,
-    });
-  } catch (error) {
-    res.status(500).json(error);
+      .add(newJob)
+      .then((ref) => {
+        return {...newJob, id: ref.id};
+      })
+      .then((addedJob) => {
+        res.status(201).send({
+          status: "success",
+          message: "add one new job",
+          data: addedJob,
+        });
+      })
+      .catch((error) => res.status(500).json(error));
   }
 };
-// const updateJob = async (req: Request, res: Response) => {
-//   const newJob = req.body;
-//   const {userId, jobIndex} = req.params;
-//   try {
-//     const snapshot = await db.collection("users"
-//        .doc(userId).collection("jobs").get();
-//     let result;
-//     let sendMessage = {status:0, message: "", data: result};
-//     if (!jobIndex) {
-//       result = await logedUser.update({jobs: FieldValue.arrayUnion(newJob)});
-//       sendMessage.status = 201;
-//       sendMessage.message = "add one job";
-//     } else if (jobIndex === -1) {
-//       result = await logedUser.update(
-//        {jobs: FieldValue.arrayRemove(newJob)});
-//       sendMessage.status = 203
-//       sendMessage.message = "delete one job"
-//     } else {
-//       result = await logedUser.update({jobs: newJob});
-//     }
+const updateJob = async (req: Request, res: Response) => {
+  const job = req.body;
+  // const newStatus = job.status
+  if (job) {
+    delete job.id;
+    const {userId, jobId} = req.params;
 
-//   } catch (error) {
-//     res.status(500).json(error);
-//   }
-// };
+    db.collection("users")
+      .doc(userId)
+      .collection("jobs")
+      .doc(jobId)
+      .update(job)
+      .then(() => res.status(200).send("updated!"))
+      .catch((err) => res.status(500).json(err));
+  }
+};
 
-// const updateJob = async (req: Request, res: Response) => {
-//   const { userId, jobIndex } = req.query;
-//   console.log("in updateJob",userId, jobIndex);
-//   const logedUser = db.collection("users").doc(userId).get();
+const deleteJob = (req: Request, res: Response) => {
+  const {userId, jobId} = req.params;
+  db.collection("users")
+    .doc(userId)
+    .collection("jobs")
+    .doc(jobId)
+    .delete()
+    .then(() => res.status(200).send("deleted"))
+    .catch((err) => res.status(500).json(err));
+};
 
-//   res.status(200).json(logedUser.data());
-// };
-
-export {getJob, addJob};
+export {getJob, addJob, updateJob, deleteJob};
