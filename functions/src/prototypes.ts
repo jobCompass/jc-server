@@ -1,6 +1,7 @@
 import {Timestamp} from "firebase-admin/firestore";
 
 type JobType = {
+  id?:string,
   title: string,
   company: string,
   type: string,
@@ -8,7 +9,7 @@ type JobType = {
   note: string | null,
   status: string,
   url:string,
-  timeline:Map<string, Timestamp>
+  timeline:{[key:string]: Timestamp}
 };
 
 type UserType = {
