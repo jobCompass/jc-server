@@ -5,26 +5,43 @@ type GoogleUserType = {
   uid: string,
   email: string,
   displayName: string,
-  photoURL: string | null,
+  photoURL?: string,
 }
 type Request = {
   body: GoogleUserType,
   params: { userId: string}
 };
 
+const userObj= (userInfo: GoogleUserType, provider:string) => {
+  const {uid, email, displayName, photoURL} = userInfo;
+  const [firstname, lastname] = displayName.split(" ");
+  return {
+    uid: uid,
+    personal_info: {
+      first_name: firstname,
+      last_name: lastname,
+      email: email,
+      authProvider: provider,
+      photoURL: photoURL,
+    },
+    custom_list: null,
+  };
+};
 
 const addUser = async (req: Request, res: Response) => {
-  const newUser = req.body;
+  const userInfo = req.body;
+  const newUser = userObj({...userInfo, photoURL: ""}, "local");
   try {
-    const addRes = await db.collection("users").add(newUser);
-    console.log("id", addRes.id);
-    res.status(201).send({
-      status: "sucess",
-      message: "user added successully",
-      data: newUser,
-    });
+    const addRes = await db.collection("users").doc(newUser.uid).set(newUser);
+    if (addRes) {
+      res.status(201).send({
+        status: "sucess",
+        message: "user added successully",
+        data: newUser,
+      });
+    }
   } catch (error) {
-    res.status(500).json(error);
+    res.status(500).send(error);
   }
 };
 
@@ -37,17 +54,9 @@ const getUser = async (req: Request, res: Response) => {
     const q = await logedUser.doc(userId).get();
     if (!q.exists) {
       console.log("not exists");
-      const newUser= {
-        uid: userId,
-        personal_info: {
-          first_name: displayName.split(" ")[0],
-          last_name: displayName.split(" ")[1],
-          email: email,
-          authProvider: "google",
-          photo: photoURL,
-        },
-        custom_list: null,
-      };
+      const newUser = userObj({
+        uid: userId, email, displayName, photoURL,
+      }, "google");
       const addRes = await db.collection("users").doc(userId).set(newUser);
       if (addRes) {
         res.status(201).send(newUser);
